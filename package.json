@@ -1,0 +1,32 @@
+{
+    "name": "homebridge-soil-moisture-sensor-digital",
+    "version": "1.0.0",
+    "description": "Soil Moisture Plugin for homebridge. This is the digital plugin",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/lucavb/homebridge-soil-moisture-sensor-digital.git"
+    },
+    "keywords": [
+        "homebridge-plugin",
+        "soil-moisture",
+        "yl-69",
+        "yl-38"
+    ],
+    "author": "Luca Becker",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/lucavb/homebridge-soil-moisture-sensor-digital/issues"
+    },
+    "homepage": "https://github.com/lucavb/homebridge-soil-moisture-sensor-digital#readme",
+    "dependencies" : {
+        "onoff" : "1.1.0"
+    },
+    "engines" : {
+        "node": ">=0.12.0",
+        "homebridge": ">=0.2.0"
+    }
+}
