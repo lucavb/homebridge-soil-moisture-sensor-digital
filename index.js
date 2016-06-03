@@ -47,20 +47,42 @@ function SoilMoistureSensorDigital(log, config) {
         .setCharacteristic(Characteristic.SerialNumber, config.serial || "8C247807-D125-4B36-94D5-36622D49A2FB");
 
 
-    this.service_humid = new Service.HumiditySensor(this.name);
-    this.service_humid.getCharacteristic(Characteristic.CurrentRelativeHumidity)
-        .on('get', this.getMoisture.bind(this));
 
-    if (config.autoRefresh && config.autoRefresh > 0) {
-        setInterval(function() {
-            that.getMoisture(function(err, value) {
-                if (!err) {
-                    that.service_humid.getCharacteristic(Characteristic.CurrentRelativeHumidity)
-                        .setValue(value);
-                }
-            });
-        }, config.autoRefresh * 1000 * 60);
-    }
+
+    // moisture characteristic
+    SoilMoisture = function() {
+        Characteristic.call(this, 'Soil Moisture', 'C160D589-9510-4432-BAA6-5D9D77957138');
+        this.setProps({
+            format: Characteristic.Formats.UINT8,
+            unit: Characteristic.Units.PERCENTAGE,
+            maxValue: 100,
+            minValue: 0,
+            minStep: 0.1,
+            perms: [Characteristic.Perms.READ, Characteristic.Perms.NOTIFY]
+        });
+        this.value = this.getDefaultValue();
+    };
+
+    inherits(SoilMoisture, Characteristic);
+
+    SoilMoisture.UUID = 'C160D589-9510-4432-BAA6-5D9D77957138';
+
+
+    // moisture sensor
+    SoilMoistureSensor = function(displayName, subtype) {
+        Service.call(this, displayName, '3C233958-B5C4-4218-A0CD-60B8B971AA0A', subtype);
+
+        // Required Characteristics
+        this.addCharacteristic(SoilMoisture);
+    };
+
+    inherits(SoilMoistureSensor, Service);
+
+    SoilMoistureSensor.UUID = '3C233958-B5C4-4218-A0CD-60B8B971AA0A';
+
+    this.moistureSensor = new SoilMoistureSensor(this.name);
+    this.moistureSensor.getCharacteristic(SoilMoisture)
+        .on('get', this.getMoisture.bind(this));
 
 }
 
@@ -72,7 +94,7 @@ SoilMoistureSensorDigital.prototype.getMoisture = function(callback) {
         if(!that.adc.busy) {
             that.adc.readADCSingleEnded(that.channel, that.progGainAmp, that.samplesPerSecond, function(err, data) {
                 that.pinVCC.write(0);
-                if(err) {   
+                if(err) {
                     throw err;
                 }
                 var value = Math.abs(data);
@@ -80,13 +102,12 @@ SoilMoistureSensorDigital.prototype.getMoisture = function(callback) {
                 percent = (percent > 100) ? 100 : percent;
                 percent = (percent < 0) ? 0 : percent;
                 percent = 100 - percent;
-                callback(null, parseFloat(percent.toFixed(0)));
+                callback(null, parseFloat(percent.toFixed(1)));
             });
         }
     }, 150);
 }
 
-
 SoilMoistureSensorDigital.prototype.getServices = function() {
-    return [this.informationService, this.service_humid];
+    return [this.informationService, this.moistureSensor];
 };
